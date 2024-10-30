@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@inrupt/solid-client": "^2.1.2",
+    "@inrupt/solid-client-authn-browser": "^2.2.6",
+    "@inrupt/solid-client-authn-core": "^1.12.2",
+    "@inrupt/solid-client-authn-node": "^1.17.5",
+    "@inrupt/vocab-common-rdf": "^1.0.5",
+    "@types/node": "^22.8.4",
+    "node-fetch": "^2.6.7",
+    "typescript": "^5.6.3"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^2.6.2"
+  },
+  "scripts": {
+    "start": "tsc interactingSolidCommunityServer.ts && node interactingSolidCommunityServer.js"
+  }
+}
