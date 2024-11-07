@@ -298,25 +298,26 @@ const runAsyncFunctions = async () => {
   // 13. update my profile card with occupation
   // await updateExistingResource(token, dpopKey, "profile/card", "INSERT DATA { <#me> <https://ics.unisg.ch#hasOccupation> <https://ics.unisg.ch#manager> }");
 
-  await makeAuthenticatedGetRequest(token, dpopKey, robot + "profile/card");
+  // await makeAuthenticatedGetRequest(token, dpopKey, robot + "operations/");
 
   const session = new Session();
   const myEngine = new QueryEngine(); 
-  // await session.login({
-  //   clientId: id,
-  //   clientSecret: secret,
-  //   oidcIssuer: id_provider
-  // });
+  await session.login({
+    clientId: id,
+    clientSecret: secret,
+    oidcIssuer: id_provider
+  });
 
   if(session.info.isLoggedIn && typeof session.info.webId === 'string') { 
     console.log("logged in") 
 
     const bindingsStream = await myEngine.queryBindings(`
       SELECT * WHERE {
+          BIND(<https://ics.unisg.ch#manager> AS ?s)
           ?s ?p ?o
       } LIMIT 100`, {
       // Set your profile as query source
-      sources: [session.info.webId],
+      sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl"],
       // Pass the authenticated fetch function
       fetch: session.fetch,
     });
@@ -328,8 +329,8 @@ const runAsyncFunctions = async () => {
       console.log(binding.has('s')); // Will be true
       
       // Obtaining values
-      console.log(binding.get('s').value);
-      console.log(binding.get('s').termType);
+      binding.has('s') ? console.log(binding.get('s').value) : console.log("no s");
+      binding.has('s') ? console.log(binding.get('s').termType) : console.log("no s");
       console.log(binding.get('p').value);
       console.log(binding.get('o').value);
     });

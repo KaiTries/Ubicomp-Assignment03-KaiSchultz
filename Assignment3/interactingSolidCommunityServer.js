@@ -255,22 +255,23 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // const t = "https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/test/myhobbies.txt";
     // 13. update my profile card with occupation
     // await updateExistingResource(token, dpopKey, "profile/card", "INSERT DATA { <#me> <https://ics.unisg.ch#hasOccupation> <https://ics.unisg.ch#manager> }");
-    yield makeAuthenticatedGetRequest(token, dpopKey, robot + "profile/card");
+    // await makeAuthenticatedGetRequest(token, dpopKey, robot + "operations/");
     const session = new solid_client_authn_node_1.Session();
     const myEngine = new query_sparql_solid_1.QueryEngine();
-    // await session.login({
-    //   clientId: id,
-    //   clientSecret: secret,
-    //   oidcIssuer: id_provider
-    // });
+    yield session.login({
+        clientId: id,
+        clientSecret: secret,
+        oidcIssuer: id_provider
+    });
     if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
         console.log("logged in");
         const bindingsStream = yield myEngine.queryBindings(`
       SELECT * WHERE {
+          BIND(<https://ics.unisg.ch#manager> AS ?s)
           ?s ?p ?o
       } LIMIT 100`, {
             // Set your profile as query source
-            sources: [session.info.webId],
+            sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl"],
             // Pass the authenticated fetch function
             fetch: session.fetch,
         });
@@ -279,8 +280,8 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
             console.log(binding.toString()); // Quick way to print bindings for testing
             console.log(binding.has('s')); // Will be true
             // Obtaining values
-            console.log(binding.get('s').value);
-            console.log(binding.get('s').termType);
+            binding.has('s') ? console.log(binding.get('s').value) : console.log("no s");
+            binding.has('s') ? console.log(binding.get('s').termType) : console.log("no s");
             console.log(binding.get('p').value);
             console.log(binding.get('o').value);
         });
