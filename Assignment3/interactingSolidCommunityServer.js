@@ -8,263 +8,289 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
-    return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (g && (g = 0, op[0] && (_ = 0)), _) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var solid_client_authn_core_1 = require("@inrupt/solid-client-authn-core");
-var id = 'my-token_05d83c6e-d48f-46bb-9fe4-684469f716d5';
-var secret = '8c40d24775fc88a81e337ad6b8c664cb1f730041d38b3ef48dccc183ac5ca1f59fe4148824048c8c7cd9475d247d99fced4ceb301034f98348aec18427ecae46';
-var resource = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.account/account/688e5644-6e00-4349-94bd-0eab40a71998/client-credentials/cc4d7d86-6cab-4fda-8da3-4a9a94808553/';
-var mainUri = "https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/";
+const solid_client_authn_core_1 = require("@inrupt/solid-client-authn-core");
+const solid_client_authn_node_1 = require("@inrupt/solid-client-authn-node");
+const query_sparql_solid_1 = require("@comunica/query-sparql-solid");
+// generally unwise to just have sensitive data like this in the code, but in this case it doesnt really matter
+const id = 'my-token_05d83c6e-d48f-46bb-9fe4-684469f716d5';
+const secret = '8c40d24775fc88a81e337ad6b8c664cb1f730041d38b3ef48dccc183ac5ca1f59fe4148824048c8c7cd9475d247d99fced4ceb301034f98348aec18427ecae46';
+const id_provider = 'https://wiser-solid-xi.interactions.ics.unisg.ch/';
+const resource = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.account/account/688e5644-6e00-4349-94bd-0eab40a71998/client-credentials/cc4d7d86-6cab-4fda-8da3-4a9a94808553/';
+const mainUri = "https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/";
+// root uris
+const root_myFamilyInfo = mainUri + 'myFamilyInfo.txt';
+const root_acl = mainUri + '.acl';
+const root_profile = mainUri + 'profile/card';
+// resource uris
+const test_main = mainUri + 'test/';
+const test_acl = test_main + '.acl';
+const test_myhobbies = test_main + 'myhobbies.txt';
+const test_myFriendsInfo = test_main + 'myFriendsInfo.txt';
+// gazeData
+const gaze_main = mainUri + 'gazeData/';
+const gazeData_acl = gaze_main + '.acl';
+const gazeData_currentActivity = gaze_main + 'currentActivity.ttl';
+// agent uris
+const david = 'https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/profile/card#me';
+const davis_activity = 'https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/gazeData/currentActivity.ttl';
+const raffael = 'https://wiser-solid-xi.interactions.ics.unisg.ch/raffael_ubicomp24/profile/card#me';
+// robot
+const robot = "https://wiser-solid-xi.interactions.ics.unisg.ch/robotSG/";
+// other string constants
+const currentActivity = `
+#use https://schema.org/SearchAction when an activity is classified as "Searching Activity"
+#use https://schema.org/CheckAction when an activity is classified as "Inspection Activity" 
+
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <https://schema.org/> .
+@prefix bm: <http://bimerr.iot.linkeddata.es/def/occupancy-profile#> .
+
+<https://solid.interactions.ics.unisg.ch/kai_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
+                                                                              schema:name "Read action"^^xsd:string;
+                                                                              prov:wasAssociatedWith <https://solid.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me>;
+                                                                              prov:used <https://solid.interactions.ics.unisg.ch/kai_ubicomp24/gazeData/kaiTest1.csv>;
+                                                                              prov:endedAtTime "2022-10-14T02:02:02Z"^^xsd:dateTime;
+                                                                              bm:probability  "0.87"^^xsd:float.
+<https://solid.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
+                                                                 foaf:name "Kai Schultz";
+                                                                 foaf:mbox <mailto:kai.schultz@student.unisg.ch>.`;
 // First we request the account API controls to find out where we can log in
-var authenticate = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var indexResponse, controls, response, authorization;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, fetch('https://wiser-solid-xi.interactions.ics.unisg.ch/.account/')];
-            case 1:
-                indexResponse = _a.sent();
-                return [4 /*yield*/, indexResponse.json()];
-            case 2:
-                controls = (_a.sent()).controls;
-                return [4 /*yield*/, fetch(controls.password.login, {
-                        method: 'POST',
-                        headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({ email: 'schultz.kai@student.unisg.ch', password: 'Ipod1997' }),
-                    })];
-            case 3:
-                response = _a.sent();
-                return [4 /*yield*/, response.json()];
-            case 4:
-                authorization = (_a.sent()).authorization;
-                return [2 /*return*/, authorization];
-        }
+const authenticate = () => __awaiter(void 0, void 0, void 0, function* () {
+    const indexResponse = yield fetch('https://wiser-solid-xi.interactions.ics.unisg.ch/.account/');
+    const { controls } = yield indexResponse.json();
+    // And then we log in to the account API
+    const response = yield fetch(controls.password.login, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ email: 'schultz.kai@student.unisg.ch', password: 'ubicomp24' }),
     });
-}); };
-var getAuthorizationToken = function (authorization) { return __awaiter(void 0, void 0, void 0, function () {
-    var indexResponse, controls, response, _a, id, secret, resource;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                console.log("This is the authorization that I get: ", authorization);
-                return [4 /*yield*/, fetch('https://wiser-solid-xi.interactions.ics.unisg.ch/.account/', {
-                        headers: { authorization: "CSS-Account-Token ".concat(authorization) }
-                    })];
-            case 1:
-                indexResponse = _b.sent();
-                return [4 /*yield*/, indexResponse.json()];
-            case 2:
-                controls = (_b.sent()).controls;
-                console.log("This is the controls that I get: ", controls);
-                return [4 /*yield*/, fetch(controls.account.clientCredentials, {
-                        method: 'POST',
-                        headers: { authorization: "CSS-Account-Token ".concat(authorization), 'content-type': 'application/json' },
-                        // The name field will be used when generating the ID of your token.
-                        // The WebID field determines which WebID you will identify as when using the token.
-                        // Only WebIDs linked to your account can be used.
-                        body: JSON.stringify({ name: 'my-token', webId: 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me' }),
-                    })];
-            case 3:
-                response = _b.sent();
-                return [4 /*yield*/, response.json()];
-            case 4:
-                _a = _b.sent(), id = _a.id, secret = _a.secret, resource = _a.resource;
-                return [2 /*return*/, [id, secret, resource]];
-        }
+    // This authorization value will be used to authenticate in the next step
+    const { authorization } = yield response.json();
+    return authorization;
+});
+const getAuthorizationToken = (authorization) => __awaiter(void 0, void 0, void 0, function* () {
+    const indexResponse = yield fetch('https://wiser-solid-xi.interactions.ics.unisg.ch/.account/', {
+        headers: { authorization: `CSS-Account-Token ${authorization}` }
     });
-}); };
-var getTokenUsage = function (id, secret) { return __awaiter(void 0, void 0, void 0, function () {
-    var dpopKey, authString, tokenUrl, response, _a, _b, token, accessToken;
-    var _c, _d;
-    return __generator(this, function (_e) {
-        switch (_e.label) {
-            case 0: return [4 /*yield*/, (0, solid_client_authn_core_1.generateDpopKeyPair)()];
-            case 1:
-                dpopKey = _e.sent();
-                authString = "".concat(encodeURIComponent(id), ":").concat(encodeURIComponent(secret));
-                tokenUrl = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.oidc/token';
-                _a = fetch;
-                _b = [tokenUrl];
-                _c = {
-                    method: 'POST'
-                };
-                _d = {
-                    // The header needs to be in base64 encoding.
-                    authorization: "Basic ".concat(Buffer.from(authString).toString('base64')),
-                    'content-type': 'application/x-www-form-urlencoded'
-                };
-                return [4 /*yield*/, (0, solid_client_authn_core_1.createDpopHeader)(tokenUrl, 'POST', dpopKey)];
-            case 2: return [4 /*yield*/, _a.apply(void 0, _b.concat([(_c.headers = (_d.dpop = _e.sent(),
-                        _d),
-                        _c.body = 'grant_type=client_credentials&scope=openid webid',
-                        _c)]))];
-            case 3:
-                response = _e.sent();
-                return [4 /*yield*/, response.json()];
-            case 4:
-                token = _e.sent();
-                accessToken = token.access_token;
-                return [2 /*return*/, [accessToken, dpopKey]];
-        }
+    const { controls } = yield indexResponse.json();
+    const response = yield fetch(controls.account.clientCredentials, {
+        method: 'POST',
+        headers: { authorization: `CSS-Account-Token ${authorization}`, 'content-type': 'application/json' },
+        body: JSON.stringify({ name: 'my-token', webId: 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me' }),
     });
-}); };
-var makeAuthenticatedRequest = function (accessToken, dpopKey, resourceUrl) { return __awaiter(void 0, void 0, void 0, function () {
-    var dpopHeader, response, _a, _b, error_1;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
-            case 0:
-                _c.trys.push([0, 4, , 5]);
-                return [4 /*yield*/, (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'GET', dpopKey)];
-            case 1:
-                dpopHeader = _c.sent();
-                return [4 /*yield*/, fetch(resourceUrl, {
-                        method: 'GET',
-                        headers: {
-                            authorization: "DPoP ".concat(accessToken),
-                            dpop: dpopHeader,
-                        },
-                    })];
-            case 2:
-                response = _c.sent();
-                if (!response.ok) {
-                    throw new Error("HTTP error! Status: ".concat(response.status));
-                }
-                _b = (_a = console).log;
-                return [4 /*yield*/, response.text()];
-            case 3:
-                _b.apply(_a, [_c.sent()]);
-                return [3 /*break*/, 5];
-            case 4:
-                error_1 = _c.sent();
-                console.error('Error making authenticated request:', error_1);
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
+    const { id, secret, resource } = yield response.json();
+    return [id, secret, resource];
+});
+const getTokenUsage = (id, secret) => __awaiter(void 0, void 0, void 0, function* () {
+    // A key pair is needed for encryption.
+    // This function from `solid-client-authn` generates such a pair for you.
+    const dpopKey = yield (0, solid_client_authn_core_1.generateDpopKeyPair)();
+    // These are the ID and secret generated in the previous step.
+    // Both the ID and the secret need to be form-encoded.
+    const authString = `${encodeURIComponent(id)}:${encodeURIComponent(secret)}`;
+    // This URL can be found by looking at the "token_endpoint" field at
+    const tokenUrl = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.oidc/token';
+    const response = yield fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+            // The header needs to be in base64 encoding.
+            authorization: `Basic ${Buffer.from(authString).toString('base64')}`,
+            'content-type': 'application/x-www-form-urlencoded',
+            dpop: yield (0, solid_client_authn_core_1.createDpopHeader)(tokenUrl, 'POST', dpopKey),
+        },
+        body: 'grant_type=client_credentials&scope=webid',
     });
-}); };
-var createNewContainer = function (accessToken, dpopKey, podName) { return __awaiter(void 0, void 0, void 0, function () {
-    var resourceUrl, dpopHeader, response, _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
-            case 0:
-                resourceUrl = mainUri + podName + "/";
-                return [4 /*yield*/, (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PUT', dpopKey)];
-            case 1:
-                dpopHeader = _c.sent();
-                return [4 /*yield*/, fetch(resourceUrl, {
-                        method: 'PUT',
-                        headers: {
-                            authorization: "DPoP ".concat(accessToken),
-                            dpop: dpopHeader
-                        },
-                    })];
-            case 2:
-                response = _c.sent();
-                _b = (_a = console).log;
-                return [4 /*yield*/, response.text()];
-            case 3:
-                _b.apply(_a, [_c.sent()]);
-                return [2 /*return*/];
-        }
+    // This is the Access token that will be used to do an authenticated request to the server.
+    // The JSON also contains an "expires_in" field in seconds,
+    // which you can use to know when you need request a new Access token.
+    const token = yield response.json();
+    const { access_token: accessToken } = token;
+    return [accessToken, dpopKey];
+});
+const makeAuthenticatedGetRequest = (accessToken, dpopKey, resourceUrl) => __awaiter(void 0, void 0, void 0, function* () {
+    const response = yield fetch(resourceUrl, {
+        method: 'GET',
+        headers: {
+            authorization: `DPoP ${accessToken}`,
+            dpop: yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'GET', dpopKey),
+        },
     });
-}); };
-var createNewResource = function (accessToken, dpopKey, resourcename, resourceContent) { return __awaiter(void 0, void 0, void 0, function () {
-    var resourceUrl, dpopHeader, response, _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
-            case 0:
-                resourceUrl = mainUri + resourcename;
-                return [4 /*yield*/, (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PUT', dpopKey)];
-            case 1:
-                dpopHeader = _c.sent();
-                return [4 /*yield*/, fetch(resourceUrl, {
-                        method: 'PUT',
-                        headers: {
-                            authorization: "DPoP ".concat(accessToken),
-                            dpop: dpopHeader,
-                            'content-type': 'text/turtle',
-                        },
-                        body: resourceContent
-                    })];
-            case 2:
-                response = _c.sent();
-                _b = (_a = console).log;
-                return [4 /*yield*/, response.text()];
-            case 3:
-                _b.apply(_a, [_c.sent()]);
-                return [2 /*return*/];
-        }
+    console.log(yield response.text());
+});
+const createNewContainer = (accessToken, dpopKey, podName) => __awaiter(void 0, void 0, void 0, function* () {
+    const resourceUrl = mainUri + podName + "/";
+    const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PUT', dpopKey);
+    const response = yield fetch(resourceUrl, {
+        method: 'PUT',
+        headers: {
+            authorization: `DPoP ${accessToken}`,
+            dpop: dpopHeader
+        },
     });
-}); };
-var updateExistingResource = function (accessToken, dpopKey, resourcename, resourceContent) { return __awaiter(void 0, void 0, void 0, function () {
-    var resourceUrl, dpopHeader, response, _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
-            case 0:
-                resourceUrl = mainUri + resourcename;
-                return [4 /*yield*/, (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PATCH', dpopKey)];
-            case 1:
-                dpopHeader = _c.sent();
-                return [4 /*yield*/, fetch(resourceUrl, {
-                        method: 'PATCH',
-                        headers: {
-                            authorization: "DPoP ".concat(accessToken),
-                            dpop: dpopHeader,
-                            'content-type': 'application/sparql-update',
-                        },
-                        body: resourceContent
-                    })];
-            case 2:
-                response = _c.sent();
-                _b = (_a = console).log;
-                return [4 /*yield*/, response.text()];
-            case 3:
-                _b.apply(_a, [_c.sent()]);
-                return [2 /*return*/];
-        }
+    console.log(yield response.text());
+});
+const createNewResource = (accessToken, dpopKey, resourcename, resourceContent) => __awaiter(void 0, void 0, void 0, function* () {
+    const resourceUrl = mainUri + resourcename;
+    const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PUT', dpopKey);
+    const response = yield fetch(resourceUrl, {
+        method: 'PUT',
+        headers: {
+            authorization: `DPoP ${accessToken}`,
+            dpop: dpopHeader,
+            'content-type': 'text/turtle',
+        },
+        body: resourceContent
     });
-}); };
-var runAsyncFunctions = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, token, dpopKey, aclContent, additionalRule, resourceUrl;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0: return [4 /*yield*/, getTokenUsage(id, secret)];
-            case 1:
-                _a = _b.sent(), token = _a[0], dpopKey = _a[1];
-                aclContent = "\n  @prefix : <#>.\n  @prefix acl: <http://www.w3.org/ns/auth/acl#>.\n  @prefix foaf: <http://xmlns.com/foaf/0.1/>.\n  @prefix k: <./>.\n  @prefix c: <profile/card#>.\n\n  :ControlReadWrite\n      a acl:Authorization;\n      acl:accessTo k:;\n      acl:agent c:me;\n      acl:default k:;\n      acl:mode acl:Control, acl:Read, acl:Write.\n  :Read\n      a acl:Authorization;\n      acl:accessTo k:;\n      acl:agentClass foaf:Agent;\n      acl:default k:;\n      acl:mode acl:Read.";
-                additionalRule = "INSERT DATA { \n  <#ReadWrite> \n    a <http://www.w3.org/ns/auth/acl#Authorization>;\n    <http://www.w3.org/ns/auth/acl#accessTo> <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/test/myhobbies.txt>;\n    <http://www.w3.org/ns/auth/acl#default> <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/test/myhobbies.txt>;\n    <http://www.w3.org/ns/auth/acl#mode> <http://www.w3.org/ns/auth/acl#Read>, <http://www.w3.org/ns/auth/acl#Write>;\n    <http://www.w3.org/ns/auth/acl#agent> <https://wiser-solid-xi.interactions.ics.unisg.ch/raffael_ubicomp24/profile/card#me>.\n    }";
-                updateExistingResource(token, dpopKey, "test/.acl", additionalRule);
-                resourceUrl = 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/test/.acl';
-                return [4 /*yield*/, makeAuthenticatedRequest(token, dpopKey, resourceUrl)];
-            case 2:
-                _b.sent();
-                return [2 /*return*/];
-        }
+    console.log(yield response.text());
+});
+const deleteResource = (accessToken, dpopKey, resourcename) => __awaiter(void 0, void 0, void 0, function* () {
+    const resourceUrl = mainUri + resourcename;
+    const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'DELETE', dpopKey);
+    const response = yield fetch(resourceUrl, {
+        method: 'DELETE',
+        headers: {
+            authorization: `DPoP ${accessToken}`,
+            dpop: dpopHeader,
+        },
     });
-}); };
+    console.log(yield response.text());
+});
+const updateExistingResource = (accessToken, dpopKey, resourcename, resourceContent) => __awaiter(void 0, void 0, void 0, function* () {
+    const resourceUrl = mainUri + resourcename;
+    const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'PATCH', dpopKey);
+    const response = yield fetch(resourceUrl, {
+        method: 'PATCH',
+        headers: {
+            authorization: `DPoP ${accessToken}`,
+            dpop: dpopHeader,
+            'content-type': 'application/sparql-update',
+        },
+        body: resourceContent
+    });
+    console.log(yield response.text());
+});
+const addRule = function (resourceUrl, defaultUrl, agent, mode = "Read") {
+    const rule = `INSERT DATA { 
+  <#${mode}> 
+    a <http://www.w3.org/ns/auth/acl#Authorization>;
+    <http://www.w3.org/ns/auth/acl#accessTo> <${resourceUrl}>;
+    <http://www.w3.org/ns/auth/acl#default> <${defaultUrl}>;
+    <http://www.w3.org/ns/auth/acl#mode> <http://www.w3.org/ns/auth/acl#${mode}>;
+    <http://www.w3.org/ns/auth/acl#agent> <${agent}>.
+    }`;
+    return rule;
+};
+const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
+    // 1. authenticate with the server to obtain id and secret 
+    // const idInfo = await authenticate();
+    // const tokenAuth = await getAuthorizationToken(idInfo);
+    // console.log(tokenAuth);
+    // 2. get the token and dpop key 
+    const [token, dpopKey] = yield getTokenUsage(id, secret);
+    // 3. create the containers "test" and "gazeData"
+    // await createNewContainer(token, dpopKey, "test");
+    // await createNewContainer(token, dpopKey, "gazeData");
+    // 4. create the resource "myhobbies.txt" in the "test" container and add some content to it
+    // const hobbies = "I enjoy running and my favorite langs are java and c++";
+    // createNewResource(token, dpopKey, "test/myhobbies.txt", hobbies);
+    // 5. standard acl content that allows logged in agents to read the resource
+    const aclContent = `
+  @prefix : <#>.
+  @prefix acl: <http://www.w3.org/ns/auth/acl#>.
+  @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+  @prefix k: <./>.
+  @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#>.
+
+  :ControlReadWrite
+      a acl:Authorization;
+      acl:accessTo k:;
+      acl:agent c:me;
+      acl:default k:;
+      acl:mode acl:Control, acl:Read, acl:Write.
+  :Read
+      a acl:Authorization;
+      acl:accessTo k:;
+      acl:agentClass foaf:Agent;
+      acl:default k:;
+      acl:mode acl:Read.`;
+    // 5. acl file that only allows owner to read and write
+    const aclContent_private = `
+      @prefix : <#>.
+      @prefix acl: <http://www.w3.org/ns/auth/acl#>.
+      @prefix foaf: <http://xmlns.com/foaf/0.1/>.
+      @prefix k: <./>.
+      @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#>.
+    
+      :ControlReadWrite
+          a acl:Authorization;
+          acl:accessTo k:;
+          acl:agent c:me;
+          acl:default k:;
+          acl:mode acl:Control, acl:Read, acl:Write.`;
+    // 6. create the acl file for the "test" container and the "gazeData" container
+    // await createNewResource(token, dpopKey, "test/.acl", aclContent);
+    // await createNewResource(token, dpopKey, "gazeData/.acl", aclContent_private);
+    // 7. create additional acl rules that allow collegues to write to the "myhobbies.txt" file
+    const additionalRule = addRule(test_myhobbies, test_main, david, "Write");
+    const additionalRule2 = addRule(test_myFriendsInfo, test_main, raffael, "Write");
+    // 8. update the acl file with the additional rules
+    // await updateExistingResource(token, dpopKey, "test/.acl", additionalRule);
+    // await updateExistingResource(token, dpopKey, "test/.acl", additionalRule2);
+    // 9. create additional resources to allow testing of access permissions
+    // await createNewResource(token, dpopKey, "test/myFriendsInfo.txt", "I have a few friends");
+    // await createNewResource(token, dpopKey, "myFamilyInfo.txt", "I have a brother and a sister");
+    // await makeAuthenticatedGetRequest(token, dpopKey, root_acl);
+    // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
+    // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
+    // await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
+    // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
+    const activityRule = addRule(gazeData_currentActivity, gaze_main, david);
+    const activitRule2 = addRule(gazeData_currentActivity, gaze_main, raffael);
+    // 12. update the acl file with the additional rules
+    // await updateExistingResource(token, dpopKey, "gazeData/.acl", activityRule);
+    // await updateExistingResource(token, dpopKey, "gazeData/.acl", activitRule2);
+    // const t = "https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/test/myhobbies.txt";
+    // 13. update my profile card with occupation
+    // await updateExistingResource(token, dpopKey, "profile/card", "INSERT DATA { <#me> <https://ics.unisg.ch#hasOccupation> <https://ics.unisg.ch#manager> }");
+    yield makeAuthenticatedGetRequest(token, dpopKey, robot + "profile/card");
+    const session = new solid_client_authn_node_1.Session();
+    const myEngine = new query_sparql_solid_1.QueryEngine();
+    // await session.login({
+    //   clientId: id,
+    //   clientSecret: secret,
+    //   oidcIssuer: id_provider
+    // });
+    if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
+        console.log("logged in");
+        const bindingsStream = yield myEngine.queryBindings(`
+      SELECT * WHERE {
+          ?s ?p ?o
+      } LIMIT 100`, {
+            // Set your profile as query source
+            sources: [session.info.webId],
+            // Pass the authenticated fetch function
+            fetch: session.fetch,
+        });
+        // Log the results
+        bindingsStream.on('data', (binding) => {
+            console.log(binding.toString()); // Quick way to print bindings for testing
+            console.log(binding.has('s')); // Will be true
+            // Obtaining values
+            console.log(binding.get('s').value);
+            console.log(binding.get('s').termType);
+            console.log(binding.get('p').value);
+            console.log(binding.get('o').value);
+        });
+        bindingsStream.on('end', () => {
+            console.log('All done!');
+        });
+    }
+    else {
+        console.log("not logged in");
+    }
+    yield session.logout();
+});
 runAsyncFunctions();
