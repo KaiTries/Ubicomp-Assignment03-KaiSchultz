@@ -1,8 +1,9 @@
 // src/index.ts
 import express, { Express, Request, Response } from "express";
+import { Session } from '@inrupt/solid-client-authn-node';
 import dotenv from "dotenv";
 import { getTokenUsage, makeAuthenticatedGetRequest, createNewContainer, createNewResource, updateExistingResource, replaceExistingResource, deleteResource } from "./utils/solid"
-import { jsonToCsv } from "./utils/util";
+import { jsonToCsv, jsonValuesToCsv } from "./utils/util";
 
 
 dotenv.config();
@@ -81,7 +82,7 @@ app.post("/gazeData", async (req: Request, res: Response) => {
 
 
 
-  const newResource = oldResource + "\n" + jsonToCsv(requestContent);
+  const newResource = oldResource + "\n" + jsonValuesToCsv(requestContent);
   replaceExistingResource(accessToken, dpopKey, podName + "/" + resourceName, newResource);
 
   res.send("Resource created");
