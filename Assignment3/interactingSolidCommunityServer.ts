@@ -31,6 +31,7 @@ const gazeData_currentActivity = gaze_main + 'currentActivity.ttl';
 const david = 'https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/profile/card#me';
 const davis_activity = 'https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/gazeData/currentActivity.ttl';
 const raffael = 'https://wiser-solid-xi.interactions.ics.unisg.ch/raffael_ubicomp24/profile/card#me';
+const raffael_currentactivity = 'https://wiser-solid-xi.interactions.ics.unisg.ch/raffael_ubicomp24/gazeData/currentActivity.ttl';
 
 // robot
 const robot = "https://wiser-solid-xi.interactions.ics.unisg.ch/robotSG/";
@@ -56,6 +57,19 @@ const currentActivity = `
                                                                  foaf:name "Kai Schultz";
                                                                  foaf:mbox <mailto:kai.schultz@student.unisg.ch>.`;
 
+const query3 = `
+PREFIX schema: <http://schema.org/>
+PREFIX assg3: <https://ics.unisg.ch#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?occupation ?activity ?material ?materialComment WHERE {
+    <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me> assg3:hasOccupation ?occupation .
+    ?occupation assg3:performs ?activity .
+    ?activity assg3:supportMaterial ?material .
+    ?material rdfs:comment ?materialComment .
+    FILTER ( LANG ( ?materialComment ) = 'en' ) .
+}`;
+                                                         
 
 
 
@@ -298,7 +312,7 @@ const runAsyncFunctions = async () => {
   // 13. update my profile card with occupation
   // await updateExistingResource(token, dpopKey, "profile/card", "INSERT DATA { <#me> <https://ics.unisg.ch#hasOccupation> <https://ics.unisg.ch#manager> }");
 
-  // await makeAuthenticatedGetRequest(token, dpopKey, robot + "operations/");
+  // await makeAuthenticatedGetRequest(token, dpopKey, raffael_currentactivity);
 
   const session = new Session();
   const myEngine = new QueryEngine(); 
@@ -311,13 +325,10 @@ const runAsyncFunctions = async () => {
   if(session.info.isLoggedIn && typeof session.info.webId === 'string') { 
     console.log("logged in") 
 
-    const bindingsStream = await myEngine.queryBindings(`
-      SELECT * WHERE {
-          BIND(<https://ics.unisg.ch#manager> AS ?s)
-          ?s ?p ?o
-      } LIMIT 100`, {
-      // Set your profile as query source
-      sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl"],
+    // 14. do the query
+    const bindingsStream = await myEngine.queryBindings(
+      query3, {
+      sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl",'https://dbpedia.org/sparql'],
       // Pass the authenticated fetch function
       fetch: session.fetch,
     });
@@ -325,14 +336,6 @@ const runAsyncFunctions = async () => {
     // Log the results
     bindingsStream.on('data', (binding) => {
       console.log(binding.toString()); // Quick way to print bindings for testing
-
-      console.log(binding.has('s')); // Will be true
-      
-      // Obtaining values
-      binding.has('s') ? console.log(binding.get('s').value) : console.log("no s");
-      binding.has('s') ? console.log(binding.get('s').termType) : console.log("no s");
-      console.log(binding.get('p').value);
-      console.log(binding.get('o').value);
     });
 
     bindingsStream.on('end', () => {
@@ -345,4 +348,4 @@ const runAsyncFunctions = async () => {
   await session.logout();
 }
 
-runAsyncFunctions()
+runAsyncFunctions();
