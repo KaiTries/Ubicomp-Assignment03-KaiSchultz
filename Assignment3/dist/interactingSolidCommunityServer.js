@@ -273,8 +273,8 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // await createNewResource(token, dpopKey, "myFamilyInfo.txt", "I have a brother and a sister");
     // await makeAuthenticatedGetRequest(token, dpopKey, root_myFamilyInfo);
     // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
-    yield createNewResource(token, dpopKey, "gazeData/currentActivity.ttl", currentActivity);
-    //await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
+    // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
+    // await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
     // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
     const activityRule = addRule(gazeData_currentActivity, gaze_main, david);
     const activitRule2 = addRule(gazeData_currentActivity, gaze_main, raffael);
@@ -287,36 +287,30 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // await makeAuthenticatedGetRequest(token, dpopKey, davis_activity);
     const session = new solid_client_authn_node_1.Session();
     const myEngine = new query_sparql_solid_1.QueryEngine();
-    /*
-    await session.login({
-      clientId: id,
-      clientSecret: secret,
-      oidcIssuer: id_provider
+    yield session.login({
+        clientId: id,
+        clientSecret: secret,
+        oidcIssuer: id_provider
     });
-  
-    if(session.info.isLoggedIn && typeof session.info.webId === 'string') {
-      console.log("logged in")
-  
-      // 14. do the query
-      const bindingsStream = await myEngine.queryBindings(
-        query3, {
-        sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl",'https://dbpedia.org/sparql'],
-        // Pass the authenticated fetch function
-        fetch: session.fetch,
-      });
-  
-      // Log the results
-      bindingsStream.on('data', (binding) => {
-        console.log(binding.toString()); // Quick way to print bindings for testing
-      });
-  
-      bindingsStream.on('end', () => {
-        console.log('All done!');
-      });
-    } else {
-      console.log("not logged in")
+    if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
+        console.log("logged in");
+        // 14. do the query
+        const bindingsStream = yield myEngine.queryBindings(query3, {
+            sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl", 'https://dbpedia.org/sparql'],
+            // Pass the authenticated fetch function
+            fetch: session.fetch,
+        });
+        // Log the results
+        bindingsStream.on('data', (binding) => {
+            console.log(binding.toString()); // Quick way to print bindings for testing
+        });
+        bindingsStream.on('end', () => {
+            console.log('All done!');
+        });
     }
-    await session.logout();
-    */
+    else {
+        console.log("not logged in");
+    }
+    yield session.logout();
 });
 runAsyncFunctions();

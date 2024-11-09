@@ -337,7 +337,6 @@ const runAsyncFunctions = async () => {
   
   const session = new Session();
   const myEngine = new QueryEngine(); 
-  /*
   await session.login({
     clientId: id,
     clientSecret: secret,
@@ -350,7 +349,7 @@ const runAsyncFunctions = async () => {
     // 14. do the query
     const bindingsStream = await myEngine.queryBindings(
       query3, {
-      sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl",'https://dbpedia.org/sparql'],
+      sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl" ,'https://dbpedia.org/sparql'],
       // Pass the authenticated fetch function
       fetch: session.fetch,
     });
@@ -367,7 +366,7 @@ const runAsyncFunctions = async () => {
     console.log("not logged in")
   }
   await session.logout();
-  */
+
 }
 
 runAsyncFunctions();
