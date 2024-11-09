@@ -86,7 +86,6 @@ const makeAuthenticatedGetRequest = async (accessToken: any, dpopKey: any, resou
       },
     });
     const responseText = await response.text();
-    console.log(responseText);
     return responseText;
 }
 
@@ -144,7 +143,6 @@ const updateExistingResource = async (accessToken: any, dpopKey: any, resourcena
         },
         body: resourceContent
       });
-      console.log(await response.text());
   }
 
 const replaceExistingResource = async (accessToken: any, dpopKey: any, resourcename: any, resourceContent: any, ctype: any) => {
@@ -159,7 +157,6 @@ const replaceExistingResource = async (accessToken: any, dpopKey: any, resourcen
         },
         body: resourceContent
       });
-      console.log(await response.text());
   }
 
 const robot = "https://wiser-solid-xi.interactions.ics.unisg.ch/robotSG/";
@@ -180,7 +177,6 @@ const querySolidPod = async (webId: string, currentActivitURL: string ): Promise
     });
 
     if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
-      console.log("logged in");
 
       // Perform the refined query
       const bindingsStream = await myEngine.queryBindings(refinedQuery(currentActivitURL), {
@@ -198,7 +194,6 @@ const querySolidPod = async (webId: string, currentActivitURL: string ): Promise
 
       // Collect the results
       bindingsStream.on('data', (binding) => {
-        console.log(binding.toString());
         results.push({
           occupation: binding.get('occupation').value,
           activity: binding.get('activity').value,
@@ -208,7 +203,6 @@ const querySolidPod = async (webId: string, currentActivitURL: string ): Promise
       });
 
       bindingsStream.on('end', () => {
-        console.log('All done!');
         resolve(results);
       });
 
@@ -217,7 +211,6 @@ const querySolidPod = async (webId: string, currentActivitURL: string ): Promise
         reject(error);
       });
     } else {
-      console.log("not logged in");
       reject(new Error("Not logged in"));
     }
 

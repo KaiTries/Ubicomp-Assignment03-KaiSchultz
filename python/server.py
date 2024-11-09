@@ -170,7 +170,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 ALL_COLLECTED_DATA = pd.concat([ALL_COLLECTED_DATA] + SimpleHTTPRequestHandler.data_frames, ignore_index=True)
                 print(f"Concatenated {self.concat_interval} DataFrames.")
                 SimpleHTTPRequestHandler.data_frames = []  # Reset the list after concatenation
-                print("Total packets: ", self.packets)
+                print("Total packets: ", SimpleHTTPRequestHandler.packets)
         return df
 
     def do_POST(self):

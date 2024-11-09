@@ -68,17 +68,12 @@ const processQueue = async () => {
     const podName = "gazeData";
     const resourceName = "kaiTest1.csv";
     const requestContent = req.body;
-
-    console.log(req.body);
-
     if (typeof requestContent !== 'object' || requestContent === null) {
       res.status(400).send("Bad Request: Invalid JSON content");
       return;
     }
 
     const oldResource = await makeAuthenticatedGetRequest(req.accessToken, req.dpopKey, kai_baseUri + podName + "/" + resourceName);
-    console.log(oldResource);
-
     const newResource = oldResource + "\n" + jsonValuesToCsv(requestContent);
     await replaceExistingResource(req.accessToken, req.dpopKey, podName + "/" + resourceName, newResource, "text/csv");
 
@@ -225,8 +220,6 @@ app.post("/share", async (req: Request, res: Response) => {
   // request body is a json array
   const checkedFriends = req.body;
   // find the friend in the friends array, with the body that is just names
-  console.log(checkedFriends);
-
   if (checkedFriends.length === 0) {
     res.status(400).send("Bad Request: Empty friend list");
     return;
@@ -255,9 +248,12 @@ app.post("/share", async (req: Request, res: Response) => {
 
 app.post("/query", async (req: Request, res: Response) => {
   const mUri = req.body.mainUri;
-  console.log(mUri);
   const result = await querySolidPod(mUri + "profile/card", mUri + "gazeData/currentActivity.ttl");
-  console.log(result);
+  if (result.length === 0) {
+    res.status(404).send("No results found");
+    return;
+  }
+  console.log("Sending additional information for the current activity");
   res.send(result);
 }
 );
@@ -294,11 +290,7 @@ app.get("/currentActivity/:who", async (req: Request, res: Response) => {
     let resultsFound = false;
     store.query(query, (result) => {
       resultsFound = true;
-      console.log('Person Name:', result['?personName'].value);
-      console.log('Probability:', result['?probability'].value);
-      console.log('Activity Name:', result['?activityName'].value);
-      console.log('End Time:', result['?endTime'].value);
-      
+      console.log("Sending current activity of " + who);
       res.send({
         personName: result['?personName'].value,
         probability: result['?probability'].value,
@@ -348,6 +340,7 @@ app.post("/classify", async (req: Request, res: Response) => {
   }`;
 
   await updateExistingResource(req.accessToken, req.dpopKey, "gazeData/currentActivity.ttl", query);
+  console.log(`Updated activity with new Prediction: ${classification} with probability ${probability} | ended at: ${endTime}`);
 
   res.send("Resource updated");
 });
