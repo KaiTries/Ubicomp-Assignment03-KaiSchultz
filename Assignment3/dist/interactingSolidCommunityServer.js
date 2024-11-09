@@ -13,11 +13,12 @@ const solid_client_authn_core_1 = require("@inrupt/solid-client-authn-core");
 const solid_client_authn_node_1 = require("@inrupt/solid-client-authn-node");
 const query_sparql_solid_1 = require("@comunica/query-sparql-solid");
 // generally unwise to just have sensitive data like this in the code, but in this case it doesnt really matter
-const id = 'my-token_05d83c6e-d48f-46bb-9fe4-684469f716d5';
-const secret = '8c40d24775fc88a81e337ad6b8c664cb1f730041d38b3ef48dccc183ac5ca1f59fe4148824048c8c7cd9475d247d99fced4ceb301034f98348aec18427ecae46';
+const id = 'new_36b495c4-46d9-4307-9ec3-506c40ae9f83';
+const secret = '38b9efccc1d91b3c031372f57439802c5f1b6f566f8c3e45da8b87b1a6e693837143913fc35f59cfd70f60b061db6c3459430324b96a274a1c9947fc763012c9';
 const id_provider = 'https://wiser-solid-xi.interactions.ics.unisg.ch/';
-const resource = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.account/account/688e5644-6e00-4349-94bd-0eab40a71998/client-credentials/cc4d7d86-6cab-4fda-8da3-4a9a94808553/';
-const mainUri = "https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/";
+const resource = 'https://wiser-solid-xi.interactions.ics.unisg.ch/.account/account/688e5644-6e00-4349-94bd-0eab40a71998/client-credentials/f0048ec9-5578-4521-acae-46ec8f0522a4/';
+const mainUri = "https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/";
+const backupUri = 'https://wiser-solid-xi.interactions.ics.unisg.ch/backup/';
 // root uris
 const root_myFamilyInfo = mainUri + 'myFamilyInfo.txt';
 const root_acl = mainUri + '.acl';
@@ -49,13 +50,13 @@ const currentActivity = `
 @prefix schema: <https://schema.org/> .
 @prefix bm: <http://bimerr.iot.linkeddata.es/def/occupancy-profile#> .
 
-<https://solid.interactions.ics.unisg.ch/kai_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
+<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
                                                                               schema:name "Read action"^^xsd:string;
-                                                                              prov:wasAssociatedWith <https://solid.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me>;
-                                                                              prov:used <https://solid.interactions.ics.unisg.ch/kai_ubicomp24/gazeData/kaiTest1.csv>;
+                                                                              prov:wasAssociatedWith <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me>;
+                                                                              prov:used <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/kaiTest1.csv>;
                                                                               prov:endedAtTime "2022-10-14T02:02:02Z"^^xsd:dateTime;
                                                                               bm:probability  "0.87"^^xsd:float.
-<https://solid.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
+<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
                                                                  foaf:name "Kai Schultz";
                                                                  foaf:mbox <mailto:kai.schultz@student.unisg.ch>.`;
 const query3 = `
@@ -64,7 +65,7 @@ PREFIX assg3: <https://ics.unisg.ch#>
 PREFIX dbo: <http://dbpedia.org/ontology/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT ?occupation ?activity ?material ?materialComment WHERE {
-    <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me> assg3:hasOccupation ?occupation .
+    <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> assg3:hasOccupation ?occupation .
     ?occupation assg3:performs ?activity .
     ?activity assg3:supportMaterial ?material .
     ?material rdfs:comment ?materialComment .
@@ -92,7 +93,7 @@ const getAuthorizationToken = (authorization) => __awaiter(void 0, void 0, void 
     const response = yield fetch(controls.account.clientCredentials, {
         method: 'POST',
         headers: { authorization: `CSS-Account-Token ${authorization}`, 'content-type': 'application/json' },
-        body: JSON.stringify({ name: 'my-token', webId: 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#me' }),
+        body: JSON.stringify({ name: 'new', webId: 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me' }),
     });
     const { id, secret, resource } = yield response.json();
     return [id, secret, resource];
@@ -159,12 +160,26 @@ const createNewResource = (accessToken, dpopKey, resourcename, resourceContent) 
     });
     console.log(yield response.text());
 });
+const deleteFaultyProfile = (accessToken, dpopKey) => __awaiter(void 0, void 0, void 0, function* () {
+    const resourceUrl = root_profile;
+    const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'DELETE', dpopKey);
+    const response = yield fetch(resourceUrl, {
+        method: 'DELETE',
+        headers: {
+            "content-type": "text/turtle",
+            authorization: `DPoP ${accessToken}`,
+            dpop: dpopHeader,
+        },
+    });
+    console.log(yield response.text());
+});
 const deleteResource = (accessToken, dpopKey, resourcename) => __awaiter(void 0, void 0, void 0, function* () {
     const resourceUrl = mainUri + resourcename;
     const dpopHeader = yield (0, solid_client_authn_core_1.createDpopHeader)(resourceUrl, 'DELETE', dpopKey);
     const response = yield fetch(resourceUrl, {
         method: 'DELETE',
         headers: {
+            "content-type": "text/turtle",
             authorization: `DPoP ${accessToken}`,
             dpop: dpopHeader,
         },
@@ -198,11 +213,12 @@ const addRule = function (resourceUrl, defaultUrl, agent, mode = "Read") {
 };
 const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // 1. authenticate with the server to obtain id and secret 
-    // const idInfo = await authenticate();
-    // const tokenAuth = await getAuthorizationToken(idInfo);
-    // console.log(tokenAuth);
+    //const idInfo = await authenticate();
+    //const tokenAuth = await getAuthorizationToken(idInfo);
+    //console.log(tokenAuth);
     // 2. get the token and dpop key 
     const [token, dpopKey] = yield getTokenUsage(id, secret);
+    // await makeAuthenticatedGetRequest(token, dpopKey, root_acl);
     // 3. create the containers "test" and "gazeData"
     // await createNewContainer(token, dpopKey, "test");
     // await createNewContainer(token, dpopKey, "gazeData");
@@ -215,7 +231,7 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
   @prefix acl: <http://www.w3.org/ns/auth/acl#>.
   @prefix foaf: <http://xmlns.com/foaf/0.1/>.
   @prefix k: <./>.
-  @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#>.
+  @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#>.
 
   :ControlReadWrite
       a acl:Authorization;
@@ -235,7 +251,7 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
       @prefix acl: <http://www.w3.org/ns/auth/acl#>.
       @prefix foaf: <http://xmlns.com/foaf/0.1/>.
       @prefix k: <./>.
-      @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/profile/card#>.
+      @prefix c: <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#>.
     
       :ControlReadWrite
           a acl:Authorization;
@@ -255,20 +271,20 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // 9. create additional resources to allow testing of access permissions
     // await createNewResource(token, dpopKey, "test/myFriendsInfo.txt", "I have a few friends");
     // await createNewResource(token, dpopKey, "myFamilyInfo.txt", "I have a brother and a sister");
-    // await makeAuthenticatedGetRequest(token, dpopKey, root_acl);
+    // await makeAuthenticatedGetRequest(token, dpopKey, root_myFamilyInfo);
     // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
     // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
-    // await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
+    //await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
     // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
     const activityRule = addRule(gazeData_currentActivity, gaze_main, david);
     const activitRule2 = addRule(gazeData_currentActivity, gaze_main, raffael);
     // 12. update the acl file with the additional rules
-    // await updateExistingResource(token, dpopKey, "gazeData/.acl", activityRule);
+    //await updateExistingResource(token, dpopKey, "gazeData/.acl", activityRule);
     // await updateExistingResource(token, dpopKey, "gazeData/.acl", activitRule2);
     // const t = "https://wiser-solid-xi.interactions.ics.unisg.ch/Davids-Pod/test/myhobbies.txt";
     // 13. update my profile card with occupation
     // await updateExistingResource(token, dpopKey, "profile/card", "INSERT DATA { <#me> <https://ics.unisg.ch#hasOccupation> <https://ics.unisg.ch#manager> }");
-    // await makeAuthenticatedGetRequest(token, dpopKey, raffael_currentactivity);
+    // await makeAuthenticatedGetRequest(token, dpopKey, davis_activity);
     const session = new solid_client_authn_node_1.Session();
     const myEngine = new query_sparql_solid_1.QueryEngine();
     yield session.login({
@@ -278,6 +294,7 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     });
     if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
         console.log("logged in");
+        // 14. do the query
         const bindingsStream = yield myEngine.queryBindings(query3, {
             sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl", 'https://dbpedia.org/sparql'],
             // Pass the authenticated fetch function

@@ -14,6 +14,6 @@
     "@types/node-fetch": "^2.6.2"
   },
   "scripts": {
-    "start": "tsc --project tsconfig.json && node interactingSolidCommunityServer.js"
+    "start": "tsc --project tsconfig.json && node dist/interactingSolidCommunityServer.js"
   }
 }
