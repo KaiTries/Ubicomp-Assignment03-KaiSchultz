@@ -315,8 +315,8 @@ const runAsyncFunctions = async () => {
   // await makeAuthenticatedGetRequest(token, dpopKey, root_myFamilyInfo);
 
   // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
-  await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
-  //await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
+  // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
+  // await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
 
   // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
   const activityRule = addRule(gazeData_currentActivity,gaze_main ,david);
