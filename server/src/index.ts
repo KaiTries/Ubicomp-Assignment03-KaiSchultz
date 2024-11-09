@@ -55,6 +55,7 @@ app.use(authenticateSession);
 const requestQueue: Array<{ req: Request, res: Response }> = [];
 let isProcessing = false;
 
+let processedRequestCount = 0;
 // because gaze data is sent frequently from hololens need to make queue otherwise the requests override each other
 const processQueue = async () => {
   if (isProcessing || requestQueue.length === 0) {
@@ -78,6 +79,12 @@ const processQueue = async () => {
     await replaceExistingResource(req.accessToken, req.dpopKey, podName + "/" + resourceName, newResource, "text/csv");
 
     res.send("Resource updated");
+
+    processedRequestCount++;
+    if (processedRequestCount >= 60) {
+      console.log("Processed 60 requests");
+      processedRequestCount = 0; // Reset the counter
+    }
   } catch (error) {
     res.status(500).send("Internal Server Error");
   } finally {
