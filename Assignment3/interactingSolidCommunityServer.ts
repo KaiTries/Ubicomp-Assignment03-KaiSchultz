@@ -50,13 +50,13 @@ const currentActivity = `
 @prefix schema: <https://schema.org/> .
 @prefix bm: <http://bimerr.iot.linkeddata.es/def/occupancy-profile#> .
 
-<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
+<https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
                                                                               schema:name "Read action"^^xsd:string;
-                                                                              prov:wasAssociatedWith <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me>;
-                                                                              prov:used <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/kaiTest1.csv>;
+                                                                              prov:wasAssociatedWith <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me>;
+                                                                              prov:used <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/kai2_ubicomp24/gazeData/kaiTest1.csv>;
                                                                               prov:endedAtTime "2022-10-14T02:02:02Z"^^xsd:dateTime;
                                                                               bm:probability  "0.87"^^xsd:float.
-<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
+<https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
                                                                  foaf:name "Kai Schultz";
                                                                  foaf:mbox <mailto:kai.schultz@student.unisg.ch>.`;
 
@@ -315,7 +315,7 @@ const runAsyncFunctions = async () => {
   // await makeAuthenticatedGetRequest(token, dpopKey, root_myFamilyInfo);
 
   // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
-  // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
+  await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
   //await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
 
   // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
@@ -337,6 +337,7 @@ const runAsyncFunctions = async () => {
   
   const session = new Session();
   const myEngine = new QueryEngine(); 
+  /*
   await session.login({
     clientId: id,
     clientSecret: secret,
@@ -366,6 +367,7 @@ const runAsyncFunctions = async () => {
     console.log("not logged in")
   }
   await session.logout();
+  */
 }
 
 runAsyncFunctions();

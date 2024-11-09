@@ -50,13 +50,13 @@ const currentActivity = `
 @prefix schema: <https://schema.org/> .
 @prefix bm: <http://bimerr.iot.linkeddata.es/def/occupancy-profile#> .
 
-<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
+<https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/currentActivity.ttl> a prov:Activity, schema:ReadAction;
                                                                               schema:name "Read action"^^xsd:string;
-                                                                              prov:wasAssociatedWith <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me>;
-                                                                              prov:used <https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/gazeData/kaiTest1.csv>;
+                                                                              prov:wasAssociatedWith <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me>;
+                                                                              prov:used <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/kai2_ubicomp24/gazeData/kaiTest1.csv>;
                                                                               prov:endedAtTime "2022-10-14T02:02:02Z"^^xsd:dateTime;
                                                                               bm:probability  "0.87"^^xsd:float.
-<https://solid.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
+<https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> a foaf:Person, prov:Agent;
                                                                  foaf:name "Kai Schultz";
                                                                  foaf:mbox <mailto:kai.schultz@student.unisg.ch>.`;
 const query3 = `
@@ -273,7 +273,7 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // await createNewResource(token, dpopKey, "myFamilyInfo.txt", "I have a brother and a sister");
     // await makeAuthenticatedGetRequest(token, dpopKey, root_myFamilyInfo);
     // 10. create the resources "currentActivity.ttl" and "kaiTest1.csv" in the "gazeData" container
-    // await createNewResource(token, dpopKey, "gazeData/currentActivity.ttl",currentActivity);
+    yield createNewResource(token, dpopKey, "gazeData/currentActivity.ttl", currentActivity);
     //await createNewResource(token, dpopKey, "gazeData/kaiTest1.csv", "");
     // 11. create acl rules that allow the agents to read the "currentActivity.ttl" file
     const activityRule = addRule(gazeData_currentActivity, gaze_main, david);
@@ -287,30 +287,36 @@ const runAsyncFunctions = () => __awaiter(void 0, void 0, void 0, function* () {
     // await makeAuthenticatedGetRequest(token, dpopKey, davis_activity);
     const session = new solid_client_authn_node_1.Session();
     const myEngine = new query_sparql_solid_1.QueryEngine();
-    yield session.login({
-        clientId: id,
-        clientSecret: secret,
-        oidcIssuer: id_provider
+    /*
+    await session.login({
+      clientId: id,
+      clientSecret: secret,
+      oidcIssuer: id_provider
     });
-    if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
-        console.log("logged in");
-        // 14. do the query
-        const bindingsStream = yield myEngine.queryBindings(query3, {
-            sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl", 'https://dbpedia.org/sparql'],
-            // Pass the authenticated fetch function
-            fetch: session.fetch,
-        });
-        // Log the results
-        bindingsStream.on('data', (binding) => {
-            console.log(binding.toString()); // Quick way to print bindings for testing
-        });
-        bindingsStream.on('end', () => {
-            console.log('All done!');
-        });
+  
+    if(session.info.isLoggedIn && typeof session.info.webId === 'string') {
+      console.log("logged in")
+  
+      // 14. do the query
+      const bindingsStream = await myEngine.queryBindings(
+        query3, {
+        sources: [session.info.webId, robot + "operations/classifiedActivitiesMaterial.ttl",'https://dbpedia.org/sparql'],
+        // Pass the authenticated fetch function
+        fetch: session.fetch,
+      });
+  
+      // Log the results
+      bindingsStream.on('data', (binding) => {
+        console.log(binding.toString()); // Quick way to print bindings for testing
+      });
+  
+      bindingsStream.on('end', () => {
+        console.log('All done!');
+      });
+    } else {
+      console.log("not logged in")
     }
-    else {
-        console.log("not logged in");
-    }
-    yield session.logout();
+    await session.logout();
+    */
 });
 runAsyncFunctions();
