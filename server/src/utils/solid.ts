@@ -1,9 +1,51 @@
 import { createDpopHeader, generateDpopKeyPair } from '@inrupt/solid-client-authn-core';
 import { Session } from '@inrupt/solid-client-authn-node';
 import { QueryEngine } from '@comunica/query-sparql-solid';
+import exp from 'constants';
+import dotenv from "dotenv";
 
 
-const mainUri = process.env.MAINURI || 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai_ubicomp24/';
+dotenv.config();
+
+const query3 = `
+PREFIX schema: <http://schema.org/>
+PREFIX assg3: <https://ics.unisg.ch#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?occupation ?activity ?material ?materialComment WHERE {
+    <https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/profile/card#me> assg3:hasOccupation ?occupation .
+    ?occupation assg3:performs ?activity .
+    ?activity assg3:supportMaterial ?material .
+    ?material rdfs:comment ?materialComment .
+    FILTER ( LANG ( ?materialComment ) = 'en' ) .
+}`;
+
+
+const refinedQuery = (currentActivityTTL: string) => `
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX schema: <https://schema.org/>
+PREFIX bm: <http://bimerr.iot.linkeddata.es/def/occupancy-profile#>
+PREFIX assg3: <https://ics.unisg.ch#>
+PREFIX dbo: <http://dbpedia.org/ontology/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT ?occupation ?activity ?material ?materialComment WHERE {
+  <${currentActivityTTL}> a ?actionType;
+    prov:wasAssociatedWith ?agent.
+  
+  ?agent assg3:hasOccupation ?occupation .
+  ?occupation assg3:performs ?activity .
+  ?activity a ?actionType .
+  ?activity assg3:supportMaterial ?material .
+  ?material rdfs:comment ?materialComment .
+  FILTER ( LANG ( ?materialComment ) = 'en' ) .
+}
+`;
+
+
+const mainUri = process.env.MAINURI || 'https://wiser-solid-xi.interactions.ics.unisg.ch/kai2_ubicomp24/';
 
 const getTokenUsage = async(id: any, secret: any): Promise<any> => {
     // A key pair is needed for encryption.
@@ -30,9 +72,9 @@ const getTokenUsage = async(id: any, secret: any): Promise<any> => {
     // The JSON also contains an "expires_in" field in seconds,
     // which you can use to know when you need request a new Access token.
     const token = await response.json();
-    const { access_token: accessToken } = token;
+    const { access_token: accessToken, expires_in: expiresIn } = token;
   
-   return [accessToken, dpopKey];
+   return [ accessToken, dpopKey, expiresIn ];
 }
 
 const makeAuthenticatedGetRequest = async (accessToken: any, dpopKey: any, resourceUrl: any) => {
@@ -77,8 +119,7 @@ const createNewResource = async (accessToken: any, dpopKey: any, resourcename: a
   }
 
 
-const deleteResource = async (accessToken: any, dpopKey: any, resourcename: any) => {
-    const resourceUrl = mainUri + resourcename;
+const deleteResource = async (accessToken: any, dpopKey: any, resourceUrl: any) => {;
       const dpopHeader = await createDpopHeader(resourceUrl, 'DELETE', dpopKey);
       const response = await fetch(resourceUrl, {
         method: 'DELETE',
@@ -106,7 +147,7 @@ const updateExistingResource = async (accessToken: any, dpopKey: any, resourcena
       console.log(await response.text());
   }
 
-const replaceExistingResource = async (accessToken: any, dpopKey: any, resourcename: any, resourceContent: any) => {
+const replaceExistingResource = async (accessToken: any, dpopKey: any, resourcename: any, resourceContent: any, ctype: any) => {
     const resourceUrl = mainUri + resourcename;
       const dpopHeader = await createDpopHeader(resourceUrl, 'PUT', dpopKey);
       const response = await fetch(resourceUrl, {
@@ -114,11 +155,74 @@ const replaceExistingResource = async (accessToken: any, dpopKey: any, resourcen
         headers: {
           authorization: `DPoP ${accessToken}`,
           dpop: dpopHeader,
-          'content-type': 'text/csv',
+          'content-type': `${ctype}`,
         },
         body: resourceContent
       });
       console.log(await response.text());
   }
 
-export { makeAuthenticatedGetRequest, getTokenUsage, createNewContainer, createNewResource, deleteResource, updateExistingResource, replaceExistingResource };
+const robot = "https://wiser-solid-xi.interactions.ics.unisg.ch/robotSG/";
+
+
+const querySolidPod = async (webId: string, currentActivitURL: string ): Promise<any[]> => {
+  return new Promise(async (resolve, reject) => {
+    const session = new Session();
+    const myEngine = new QueryEngine();
+
+    const id = process.env.ID;
+    const secret = process.env.SECRET;
+    const id_provider = process.env.ISSUER;
+    await session.login({
+      clientId: id,
+      clientSecret: secret,
+      oidcIssuer: id_provider
+    });
+
+    if (session.info.isLoggedIn && typeof session.info.webId === 'string') {
+      console.log("logged in");
+
+      // Perform the refined query
+      const bindingsStream = await myEngine.queryBindings(refinedQuery(currentActivitURL), {
+        sources: [
+          webId,
+          currentActivitURL,
+          robot + "operations/classifiedActivitiesMaterial.ttl",
+          'https://dbpedia.org/sparql'
+        ],
+        // Pass the authenticated fetch function
+        fetch: session.fetch,
+      });
+
+      const results: any[] = [];
+
+      // Collect the results
+      bindingsStream.on('data', (binding) => {
+        console.log(binding.toString());
+        results.push({
+          occupation: binding.get('occupation').value,
+          activity: binding.get('activity').value,
+          material: binding.get('material').value,
+          materialComment: binding.get('materialComment').value,
+        });
+      });
+
+      bindingsStream.on('end', () => {
+        console.log('All done!');
+        resolve(results);
+      });
+
+      bindingsStream.on('error', (error) => {
+        console.error('Error during SPARQL query:', error);
+        reject(error);
+      });
+    } else {
+      console.log("not logged in");
+      reject(new Error("Not logged in"));
+    }
+
+    await session.logout();
+  });
+};
+
+export { makeAuthenticatedGetRequest, getTokenUsage, createNewContainer, createNewResource, deleteResource, updateExistingResource, replaceExistingResource, querySolidPod};
