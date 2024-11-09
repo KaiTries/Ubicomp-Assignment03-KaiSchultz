@@ -138,6 +138,7 @@ public class SolidInteractionScript : MonoBehaviour
                     UnityMainThreadDispatcher.Instance().Enqueue(() =>
                     {
                         solidTextMesh.text = "No activity detected";
+                        solidTextMeshRobot.text = string.Empty;
                     });
                     return;
                 }
@@ -150,6 +151,7 @@ public class SolidInteractionScript : MonoBehaviour
                                          $"Activity: {activity.ActivityName}\n" +
                                          $"Probability: {activity.Probability}\n" +
                                          $"End Time: {activity.EndTime}";
+                    solidTextMeshRobot.text = string.Empty;
                 });
 
                 if (activity.ActivityName == "Read action" || activity.ActivityName == "Check action")

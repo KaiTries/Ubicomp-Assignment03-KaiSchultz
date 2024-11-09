@@ -3191,7 +3191,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   solidTextMesh: {fileID: 2097212646}
   solidTextMeshRobot: {fileID: 1599582466}
-  url: currentActivity/me
+  url: currentActivity/kai
   friendsEndpoint: friends
   friendCheckbox: {fileID: 1257414384442991238, guid: b87de8664490aca4b87ebf57fdf49e4b, type: 3}
   toggleContainer: {fileID: 2110602348}

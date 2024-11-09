@@ -12,6 +12,7 @@ public class GazeReceiverScript : MonoBehaviour
 {
     // connect the DtatProvider-Prefab from ARETT in the Unity Editor
     public DataProvider DataProvider;
+    private int packetCounter = 0;
     private ConcurrentQueue<Action> _mainThreadWorkQueue = new ConcurrentQueue<Action>();
     private bool coroutineRunning = false;
     private static readonly HttpClient pythonClient = new()
@@ -114,6 +115,13 @@ public class GazeReceiverScript : MonoBehaviour
     /// <returns></returns>
     public void HandleDataFromARETT(GazeData gd)
     {
+        packetCounter++;
+
+        if (packetCounter >= 60)
+        {
+            Debug.Log("60 Pakete wurden gesendet");
+            packetCounter = 0; 
+        }
         // Some exemplary values from ARETT.
         // for a full list of available data see:
         // https://github.com/AR-Eye-Tracking-Toolkit/ARETT/wiki/Log-Format#gaze-data
@@ -125,8 +133,6 @@ public class GazeReceiverScript : MonoBehaviour
         t += "\ngazeDirection_y:" + gd.GazeDirection.y;
         t += "\ngazeDirection_z:" + gd.GazeDirection.z;
         
-        Debug.Log(t);
-
          _ = PostAsync(pythonClient, t);
 
         // Create an instance of the serializable class and populate it with gaze data
@@ -147,7 +153,7 @@ public class GazeReceiverScript : MonoBehaviour
         string jsonString = JsonUtility.ToJson(gazeDataJson);
 
         // Send the JSON string as a payload in the PostAsync method
-        // _ = PostAsync(httpClient, jsonString);
+         _ = PostAsync(httpClient, jsonString);
 
     }
 
